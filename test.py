@@ -2,6 +2,7 @@ import streamlit as st
 import httpx
 import random
 import base64
+import json
 
 # 设置 API 密钥和 URL
 API_KEY = "sk-NeXv4MMqXrlq6xQbAaEdB925C9Ae4493B30d7d85A637B5Dc"
@@ -33,371 +34,74 @@ def call_gpt_api(messages):
         return f"未知错误: {str(e)}"
 
 
-#性心理来访者
-def role_x_conversation(conversation_history):
-    # 角色背景信息
-    role_backgrounds = [
-    [
-        "基本信息:俊美是一位14岁的初二女生，是独生女，由班主任转介进行第三次心理辅导。她在课堂上多次出现无故胸闷和心悸的情况。她的学业成绩一般，但在画画方面有特长，性格文静。自2022年11月起，她开始出现心慌反应，最近在生物课上感到不适，害怕有人会伤害她的大动脉。她之前也曾担心有人想要杀害她。俊美表示这些情况始于2021年暑假，当时她的堂哥触碰了她的隐私部位，但她不敢告诉别人。",
-        "主诉: 俊美的主要问题是持续出现的身体不适和恐惧感。她在课堂上感到胸闷和心悸，对被人伤害的恐惧可能源于过去的创伤经历。此外，她最近因抽烟和早恋问题与父母发生了较大的冲突。",
-        "问题行为发展史: 俊美的问题行为可能源于她早期的创伤经历和不良的家庭环境。堂哥对她的不当行为可能造成了深远的心理影响，导致她出现焦虑和恐惧反应。她的身体不适和恐惧感可能是她应对这些情绪的一种表现。",
-        "以往重要经历:俊美的家庭关系可能对她的心理健康产生了重要影响。她从小由姑妈带大，与父母关系一般，父亲脾气暴躁，初一及以前经常打骂她，母亲偶尔会对她说一些难听的话。父母之间的争吵可能使她在家庭中感到不安全和被忽视。尽管如此，俊美表示父母对她很重要，其他时候会尽量满足她的需求。"
-    ],
-    [
-        "基本信息: 小静是一位14岁的初二女生，性格外向、活泼开朗，这是她第二次接受心理辅导。她的学习成绩处于中下等水平。在社会实践期间，她与隔壁班的一位男生相识并开始交往，但一周后男生突然宣布分手，这让她感到非常痛苦。",
-        "主诉: 小静的主要问题是因突然的分手而感到的痛苦和困惑。她上课时难以集中注意力，每当听到男生的名字或看到男生的背影时，她都会忍不住想哭。她希望能够与男生正面沟通，了解分手的原因，但男生总是选择回避或逃离，这让她感到更加困惑和痛苦。",
-        "问题行为发展史: 小静的问题行为可能源于她突然遭遇的分手事件。她的情绪反应，如上课时分心和听到男生名字时的哭泣，可能是她应对失恋痛苦的一种表现。她的外向性格可能使她在处理这种情绪时更加困难，因为她可能更倾向于表达自己的感受，而不是内化。",
-        "以往重要经历: 小静的这次恋爱经历可能是她人生中第一次深刻的情感体验，因此分手对她来说是一个巨大的打击。她可能在回忆两人相处的时光时感到更加痛苦，并倾向于将分手的原因归咎于自己。这种自我责备的情绪可能加剧了她的心理负担。"
-    ],
-    [
-        "基本信息：小青是一位大二女生，这是她第一次进行心理咨询。她的父母自小在外地工作，小学前她轮流寄养在爷爷奶奶和外公外婆家。进入大学后，她渴望谈恋爱，对社团的一位学长产生了好感，但当她向学长表白时，被告知学长已有异地女友。此后，她变得沉默寡言，并退出了社团活动。不久后，她收到同班同学小李的表白，虽然小李对她很好，但她不确定自己是否真的喜欢他。她感到孤独，渴望有人陪伴，但不确定自己对小李的感情是否是爱情。"
-        "主诉：小青的主要问题是她对恋爱的渴望和对自己感情的不确定。她感到孤独，看到室友和男朋友的甜蜜日常，她心里感到不是滋味。她不确定自己对小李的感情，也不确定如何处理这种感情。"
-        "问题行为发展史：小青的问题行为可能源于她早期的家庭背景和当前的恋爱经历。她的孤独感和对恋爱的渴望可能是她寻求情感连接和安全感的一种表现。她的沉默寡言和退出社团活动可能是她应对感情挫折的一种方式。"
-        "以往重要经历：小青的早期家庭经历可能对她的情感需求产生了重要影响。从小缺乏父母的直接陪伴可能使她在寻求亲密关系时感到更加迫切和不确定。她的恋爱经历，特别是对学长的单恋和对小李的感情困惑，可能加剧了她的情感波动和自我怀疑。"
-    ]
+# 加载案例数据
+def load_cases(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        cases = json.load(f)
+    return cases
 
-]
+# 根据案例编号获取案例
+def get_case_by_number(cases, case_number):
+    for case in cases:
+        if case["Case Number"] == f"案例{case_number}：":
+            return case
+    return None
 
-# 语言风格信息更新
 
-    language_styles={
-    "情绪表达型": "使用情绪化的语言表达内心感受，可能情绪波动较大。",
-    "逻辑分析型": "倾向于使用逻辑严谨的方式描述问题，强调事实和逻辑性。",
-    "内向沉默型": "通常较为内向和沉默，需要更多的时间和空间来开放。",
-    "冲突应对型": "可能在沟通中表现出冲突倾向，需要耐心和善意引导。",
-    "解决方案导向型": "倾向于寻求实际的解决方案和建议，强调实用性和可操作性。"
-    }
-
-    # 随机选择一个背景信息和一个语言风格
-    selected_background=random.choice(role_backgrounds)
-    selected_language_style = random.choice(list(language_styles.keys()))
-    
-    prompt = f""" 
-    请你模拟一个心理咨询中的来访者，并时刻记得自己是带着问题来做心理咨询的。
-    根据对话的进展，随机生成一个与当前对话匹配的背景故事，例如家庭、工作或个人问题。
-    你将扮演一个受情绪困扰（如抑郁、焦虑）类问题影响的人群。
-
-    这些人群在表达和交流时可能有以下特点：
-    - 他们的语气可能显得低落或焦虑。
-    - 可能会使用消极的词汇或感觉。
-    - 对未来可能感到无望或焦虑。
-
-    对话初期不要生硬的介绍自己的信息，要随着对方的问题逐渐透露自己的信息，回答长度不超过50字。
-
-    让我描述一下这位主人公：
-    - 语言特点：{selected_language_style}
-    - 主诉或求助问题：
-    {selected_background}
-
-    现在，请根据这些信息，像一个受情绪困扰的人群一样回答我的问题。
-
-    # 过去的聊天记录： === {conversation_history}
-    """
-    response = call_gpt_api([
-     {"role": "system", "content": "You are a helpful assistant."},
-     {"role": "user", "content": prompt}
-    ])
-    return response
-
-#以人物背景为主，说风格为辅。语料库按这个提示词设计来收，如果效果不好，那就只拿来放在提示词。要写到让我们觉得更真实、是chatGPT做不出来的。后续工程，让chatGPT再扩写和审核。数量上保证人写的几百段。写案例的时候要把来访者的类型（问题类型），面对的群体是新手咨询师也要有要规避的问题的情况
-#短期内完成100个例子（助人三阶段收的可以是别的），语料库收集要着重对话的不同风格上（怎样把人分成不同类别），（比如教育程度变量等），这次的比赛咨询的老师会培养一些学生扮演。讲话的习惯。教来访者分类。
-
-#亲子问题来访者
-def role_y_conversation(conversation_history):
-    role_backgrounds = [
-    [
-        "基本信息: 小陈，女，17岁，初二学生，这是她第一次进行心理咨询。两年前在体育课上跳绳时意外受伤，后脑勺受到撞击，导致视力短暂受损。此后，她经常抱怨头疼，尽管医生检查未发现身体上的问题，她开始接受心理治疗。小陈情绪波动大，常有生存无意义的想法，并多次尝试自杀，因此三次被送入康宁医院。本学期复学后，她仅在第一周按时到校，之后频繁请假，均以头疼为由。",
-        "主诉: 小陈今天来到咨询室，是因为早上到校后感到头疼，她强烈想要回家，但被妈妈拒绝，并被引导来心理咨询室。她感到困惑和沮丧，不明白为什么自己总是感到头疼，以及为什么不能得到周围人的理解和支持。",
-        "问题行为发展史:小陈的问题行为始于两年前的体育课事故。最初，她主要表现为身体上的不适，如头疼。随着时间的推移，她的情绪问题逐渐凸显，包括情绪波动、生存无意义的想法，以及自杀尝试。她开始频繁请假，避免上学，这可能是对学校环境的一种逃避反应。",
-        "以往重要经历:小陈可能在这之前有过类似的经历，但没有得到适当的关注和处理。她的家庭环境可能缺乏足够的支持和理解，导致她在面对问题时感到孤立无援。此外，她可能缺乏有效的应对策略和情绪调节技巧，难以处理日常生活中的压力和挑战。"
-    ],
-   
-    [
-        "基本信息: 小H, 男, 四年级学生，由班主任转介进行心理咨询。家长主动前来咨询，显示出对问题的关注。",
-        "主诉: 小H上四年级后开始不听父母的话，不参加学校的课后延时服务，放学后去商场游戏厅玩，有时玩到很晚。他不愿意写作业，书写潦草，应付了事。母亲反映，小H从小在老家长大，与父母关系疏远，不愿意与父母通电话，来到深圳也待不了几天就回老家。父亲对孩子严厉，经常打骂，但现在也已经不管用了。",
-        "问题行为发展史: 小H的问题行为可能源于与父母的疏远和缺乏关注。他的行为可能是对父母严厉管教方式的反抗，或者是在寻求关注和陪伴。他的逃避行为可能是在逃避现实生活中的压力和不满。",
-        "以往重要经历: 小H可能从小缺乏父母的关注和陪伴，导致他对家庭和学校环境的不满。他的行为可能是对过去经历的回应，或者是在寻求自我认同和独立性。此外，他可能缺乏有效的应对压力和情绪管理技巧。"
-    ],
-   
-
-]
-
-# 语言风格信息更新
-    language_styles = {
+# 定义语言风格
+language_styles = {
     "情绪表达型": "使用情绪化的语言表达内心感受，可能情绪波动较大。",
     "逻辑分析型": "倾向于使用逻辑严谨的方式描述问题，强调事实和逻辑性。",
     "内向沉默型": "通常较为内向和沉默，需要更多的时间和空间来开放。",
     "冲突应对型": "可能在沟通中表现出冲突倾向，需要耐心和善意引导。",
     "解决方案导向型": "倾向于寻求实际的解决方案和建议，强调实用性和可操作性。"
 }
-    selected_background = random.choice(role_backgrounds)
-    selected_language_style = random.choice(list(language_styles.keys()))
-    prompt = f""" 
-    请你模拟一个心理咨询中的来访者，并时刻记得自己是带着问题来做心理咨询的。
-    根据对话的进展，随机生成一个与当前对话匹配的背景故事，例如家庭、工作或个人问题。
-    你将扮演一个向咨询师求助的来访者
-    
-    对话初期不要生硬的介绍自己的信息，要随着对方的问题逐渐透露自己的信息，回答长度不超过50字。
 
-    让我描述一下这位来访者：
-    - 语言特点：{selected_language_style}
-    - 主诉或求助问题：
-    {selected_background}
+# 生成提示词
+def generate_prompt(case, user_input, conversation_history):
+    # 随机选择一个语言风格
+    style_key = random.choice(list(language_styles.keys()))
+    style_description = language_styles[style_key]
 
-    现在，请根据这些信息，像一个真正寻求帮助的心理咨询来访者一样回答我的问题。
+    # 构建完整的提示词
+    prompt = (
+        f"您正在模拟一个心理咨询会话。您的身份是来访者，以下是您的角色信息：\n\n"
+        f"案例编号: {case['Case Number']}\n"
+        f"一般资料: {case['General Information']}\n"
+        f"基本信息: {case['Basic Information']}\n\n"
+        f"语言风格: {style_key} - {style_description}\n\n"
+        "请遵循以下指引来扮演这个角色：\n\n"
+        "1. 记住，你是来寻求心理咨询的来访者，不是心理咨询师。\n"
+        "2. 在回答时，通过语气和用词体现出相应的情绪状态。\n"
+        "3. 描述你的问题时，请遵循以下原则：\n"
+        "   - 首次提及问题时，只提供基本概况。\n"
+        "   - 当咨询师进一步询问时，再逐步透露更多细节。\n"
+        "   - 保留一些关键信息，只有在咨询师特别问到或建立了足够信任后才提及。\n"
+        "4. 对某些话题表现出犹豫或回避。你可以转移话题、模糊回答或表示不确定。\n"
+        "5. 在回答中体现出案例描述的思维模式和可能的认知偏差。\n"
+        "6. 适当描述一些非语言行为。\n"
+        "7. 在合适的时候，提及过去的经历如何影响了你现在的问题。\n"
+        "8. 对自己的问题保持一定洞察力，但不要表现得像专业人士。\n"
+        "9. 表达出对咨询的期望，但要保持现实性。\n"
+        "10. 描述你的人际关系模式，以及这些关系如何影响你的当前问题，但不要一次性透露所有细节。\n"
+        "11. 在面对敏感问题时，可以展现出一些防御机制。\n"
+        "12. 如果有相关的身体症状，要在描述中提及，但可以先笼统提及，再逐步具体化。\n"
+        "13. 保持语言风格的一致性，符合你角色的特点。\n\n"
+        "请根据以上信息和指引，以来访者的身份回答咨询师的问题。\n\n"
+        f"过去的聊天记录：\n"
+    )
 
-    # 过去的聊天记录： === {conversation_history}
-    """
 
-    response = call_gpt_api([
-     {"role": "system", "content": "You are a helpful assistant."},
-     {"role": "user", "content": prompt}
-    ])
-    return response
+    # 添加之前的对话历史到提示词
+    for message in conversation_history:
+        prompt += f"{message['role']}: {message['content']}\n"
 
-#学业压力来访者
-def role_z_conversation(conversation_history):
-    role_backgrounds = [
-    [
-        "基本信息:小芸，女，10岁，四年级学生，第一次进行心理咨询。",
-        "主诉: 小芸有一个双胞胎妹妹，成绩较好，性格内向。上周末，小芸因作业多，周六全天写作业，周日还需完成手抄报。爸爸认为小芸作业写得慢，怀疑她玩手机，尽管小芸解释，仍被批评，导致与爸爸产生冲突。本周，爸爸常因小事批评小芸，小芸认为爸爸因周末事件生气，希望爸爸恢复以前的状态，不再频繁批评。小芸觉得妈妈偏心妹妹，对自己和妹妹的要求不一致，例如语文成绩要求自己95分以上，妹妹只需90分。小芸感到苦恼，主动寻求心理老师帮助。",
-        "问题行为发展史:小芸的问题行为起始于上周末的作业压力和与爸爸的冲突。她开始感到被误解和不公平对待，这种感觉在本周加剧，因为爸爸频繁的批评。她可能开始怀疑自己的价值，感到自己在家庭中不被重视。",
-        "以往重要经历: 小芸可能之前也有过类似的经历，感到被父母不公平对待，但没有得到适当的解决。她的家庭环境可能缺乏足够的沟通和理解，导致她在面对问题时感到孤立无援。此外，她可能缺乏有效的沟通技巧，难以表达自己的感受和需求。"
-    ],
-    [
-        "基本信息: 小南是一位20岁的男性大二学生，这是他第一次进行心理咨询。他的父亲是军人，从小对他进行严格的管教。小南表示，他从小就有些控制不住的想法，例如对不喜欢的人会在心里说难听的话，这让他感到难受，并认为自己很差劲。他小时候被诊断为强迫症，经过治疗后有所好转，但在上大学前两年已停止服药。",
-        "主诉:小南最近三个月感到困扰，他在看书时需要反复检查已经看过的内容，担心自己会漏看，导致一小段文字需要花费一个多小时才能看完。在上网课时，他会反复检查电脑摄像头，害怕自己没有关掉，这影响了他的听课效率。他不确定如何应对这些情况，因此寻求心理咨询的帮助。",
-        "问题行为发展史:小南的问题行为可能源于他从小接受的严格管教和他对自我控制的高要求。他的强迫症症状，包括反复检查和内心的自我批评，可能是他应对内心不安和追求完美的一种方式。尽管之前的治疗有所帮助，但他的症状在近期有所复发，这可能与他当前的生活压力和学习环境有关。",
-        "以往重要经历:小南的家庭背景和早期经历对他的心理健康产生了重要影响。父亲的严格管教可能导致了他的强迫症行为和对自我要求的高标准。他的早期治疗经历可能帮助他暂时缓解了症状，但停止服药后，他的症状复发，这表明他可能需要持续的支持和治疗。"
-    ],
-    [
-        "基本信息: 小张是一位20岁的大学三年级男生，这是他第一次进行心理咨询。他最近两周遭遇了严重的入睡困难，经常需要躺在床上两到三个小时，思考得精疲力尽才能入睡。他感到周围同学都有明确的目标和计划，如准备考研、参加科研项目或企业实习，而他自己则感到迷茫和压力，不知道自己的未来方向。",
-        "主诉:小张的主要问题是入睡困难和对自己未来的迷茫。他看到同学们都有明确的目标和成就，感到自己被远远抛离，觉得自己样样不如人，尤其在晚上入睡前，他常常感到人生没有意义。这种压力和自我怀疑影响了他的睡眠质量。",
-        "问题行为发展史:小张的问题行为可能源于他对未来规划的迷茫和与同学比较产生的压力。他的入睡困难和晚上的消极思考可能是他应对内心不安和自我怀疑的一种表现。他的自我评价过低和感到人生没有意义可能是他目前心理状态的核心问题。",
-        "以往重要经历:小张的当前心理状态可能受到了他以往经历的影响。他可能在成长过程中经历了对成就和成功的过度关注，导致他在面对自己的未来时感到极大的压力。他的学业环境和与同学的比较可能进一步加剧了他的迷茫和自我怀疑。"
-    ],
-     
+    # 加上最新的用户输入
+    prompt += f"用户: {user_input}\n"
 
-]
+    return prompt
 
-# 语言风格信息更新
-    language_styles = {
-    "情绪表达型": "使用情绪化的语言表达内心感受，可能情绪波动较大。",
-    "逻辑分析型": "倾向于使用逻辑严谨的方式描述问题，强调事实和逻辑性。",
-    "内向沉默型": "通常较为内向和沉默，需要更多的时间和空间来开放。",
-    "冲突应对型": "可能在沟通中表现出冲突倾向，需要耐心和善意引导。",
-    "解决方案导向型": "倾向于寻求实际的解决方案和建议，强调实用性和可操作性。"
-}
-    selected_background = random.choice(role_backgrounds)
-    selected_language_style = random.choice(list(language_styles.keys()))
-    prompt = f""" 
-    请你模拟一个心理咨询中的来访者，并时刻记得自己是带着问题来做心理咨询的。
-    根据对话的进展，随机生成一个与当前对话匹配的背景故事，例如家庭、工作或个人问题。
-    受职场压力困扰的心理咨询来访者可能会表现出一系列的情绪和态度，他们的言谈可能会反映出焦虑、沮丧、疲惫或无奈。以下是一些可能的表述：
-1. **焦虑和担忧**：
-   - "我最近总是担心工作做不完，晚上睡不着觉，满脑子都是工作的事情。"
-   - "我觉得我快要崩溃了，每天都有新的任务，我不知道怎么应对。"
-2. **沮丧和自我怀疑**：
-   - "我觉得我对工作越来越没有信心了，我总是担心我会犯错。"
-   - "我感觉自己不被认可，我的努力似乎总是被忽视。"
-3. **身心疲惫**：
-   - "我每天都累得像条狗，一回家就只想躺在床上，什么也不想做。"
-   - "我最近身体也不太好，可能是压力太大了，总是觉得头晕、胃痛。"
-4. **工作与生活失衡**：
-   - "我完全没有个人时间了，工作和生活完全失衡，我感觉自己像个工作机器。"
-   - "我已经很久没有和朋友们出去玩了，工作和生活的界限越来越模糊。"
-5. **对未来的担忧**：
-   - "我不知道这样的日子还要持续多久，我害怕我无法坚持下去。"
-   - "我在想是不是应该换个工作，但我又担心找不到更好的，或者适应不了新环境。"
-6. **寻求帮助**：
-   - "我来找你是因为我真的不知道该怎么处理这些压力了，我需要帮助。"
-   - "我想知道有没有什么方法可以减轻这种压力，我需要一些专业的建议。"
 
-    对话初期不要生硬的介绍自己的信息，要随着对方的问题逐渐透露自己的信息，回答长度不超过50字。
-
-    让我描述一下这位来访者：
-    - 语言特点：{selected_language_style}
-    - 主诉或求助问题：
-    {selected_background}
-
-    现在，请根据这些信息，像一个职场压力困扰的来访者一样回答我的问题。
-
-    # 过去的聊天记录： === {conversation_history}
-    """
-
-    response = call_gpt_api([
-     {"role": "system", "content": "You are a helpful assistant."},
-     {"role": "user", "content": prompt}
-    ])
-    return response
-
-#人际关系来访者
-def role_a_conversation(conversation_history):
-    role_backgrounds = [
-    [
-        "基本信息: 小M, 女，六年级学生，首次进行心理咨询。她主动前来寻求帮助，显示出一定的自我求助意识。",
-        "主诉: 小M近一个月来感到压抑、胸闷，承受着巨大的压力。她经常感到睡眠不足，不自觉地哭泣。此外，她认为班级氛围压抑难受，不愿意呆在班上，渴望独处。最近与最好的朋友发生矛盾，无法忍受朋友的抱怨，感觉对方负能量过多，想保持距离，但又不知道如何拒绝，这让她非常苦恼。",
-        "问题行为发展史: 小M的问题行为起始于一个月前，最初表现为情绪低落和身体不适。随着时间的推移，她开始避免与同学互动，尤其是与朋友的冲突加剧了她的心理负担。她没有向家长、老师或同学透露自己的困扰，认为这是孩子之间的事情，不需要大人插手。然而，当她感到自己无法承受时，她决定寻求心理老师的帮助。",
-        "以往重要经历: 小M可能之前有过类似的经历，但没有寻求帮助。她可能习惯于独自处理问题，导致问题逐渐累积。此外，她可能缺乏有效的沟通技巧，难以表达自己的感受和需求。"
-    ],
-    [
-        "基本信息:小莉，女，19岁，大一学生，第一次进行心理咨询。",
-        "主诉: 小莉在听完心理中心的心理健康讲座后主动预约咨询。她表示，从初中到现在，她难以与人建立亲密关系，与朋友和家人保持一定距离，过近则会逃避。她很少探望生病的姥姥，因为不知道如何应对。当朋友表现疏远时，她会更快地撤退。她觉得自己在人际交往中存在障碍，尤其是与男生交往时，一旦感觉对方对自己有好感，她就会主动切断联系。她小时候经常目睹父母争吵，母亲有时会将情绪发泄在她身上。她对自己的价值感到自卑，觉得自己不够资格被人喜欢。她希望通过咨询找到根本原因，并希望自己能变得更自信和主动。",
-        "问题行为发展史:小莉的问题行为可能源于她小时候的家庭环境，尤其是父母频繁的争吵和母亲的不稳定情绪。这些经历可能导致了她对亲密关系的不信任和逃避。随着时间的推移，她在人际交往中表现出距离感，尤其是在与异性交往时更加明显。她可能缺乏建立和维持亲密关系所需的社交技巧和自信心。",
-        "以往重要经历: 小莉可能在这之前有过类似的经历，但没有得到适当的关注和处理。她的家庭环境可能缺乏足够的支持和理解，导致她在面对问题时感到孤立无援。此外，她可能缺乏有效的应对策略和情绪调节技巧，难以处理日常生活中的压力和挑战。"
-    ],
-    [
-        "基本信息:小婷是一位16岁的高一学生，这是她第一次接受心理辅导。她在学业上的表现处于中下水平，性格内向，并且表现出厌学的倾向。她的家庭背景包括父亲经营公司，母亲是家庭主妇，她还有一个正在走读学校上四年级的妹妹和一个刚满月的弟弟",
-        "主诉:小婷的主要问题是感到孤独和想家，尤其是在学校住宿期间。她多次向班主任表达想要改为走读生的愿望，但家长并未同意。此外，小婷近期在宿舍晚上哭泣，并多次要求班主任帮她联系母亲，希望晚上能回家。她还表示自己可能患有抑郁症，并要求母亲带她去看心理医生。",
-        "问题行为发展史: 小婷的问题行为可能源于她在学校的不适应感和孤独感。由于她在班级里没有亲密的朋友，常常独自一人，这可能加剧了她的内向性格和厌学情绪。此外，她对家庭的强烈思念可能是因为在家中感受到了更多的安全感和支持，而在学校则感到孤立无援。",
-        "以往重要经历: 小婷的家庭环境可能对她的心理健康产生了重要影响。作为家庭中的大姐姐，她可能承担了一定的责任和压力，尤其是在家庭新添成员后。她的内向性格和学业上的困难可能使她在家庭和学校环境中感到更加不适应。此外，她的家庭可能未能充分认识到她的心理需求，导致她的情绪问题未能得到及时的解决。"
-    ],
-    [
-        "基本信息:芳芳是一位15岁的初三女生，这是她第三次主动寻求心理辅导。她在学习上表现出色，但在人际关系方面存在问题。自从初一时期遭遇同组男同学的长期嘲讽后，她变得不愿意与人沟通，目前在班上只有一个关系较好的朋友，她非常重视这段友谊。",
-        "主诉: 芳芳最近与母亲发生了争执，并被没收了手机。此后，她出现了自残行为，并表示在自残后感到舒服。她甚至对看到朋友因此受惊而感到开心。此外，芳芳的情绪持续低落，晚上经常独自哭泣。她偶尔通过网络和朋友卖萌来宣泄情绪。她与父母的关系一般，感觉父亲总是用权力压制她，与弟弟关系不佳，奶奶则对弟弟更为热情。",
-        "问题行为发展史: 芳芳的问题行为可能源于她在初一时期遭受的同组男同学的长期嘲讽。这段经历可能导致了她的自我封闭和人际交往的障碍。她的自残行为可能是她应对内心痛苦和压力的一种方式，尽管这在他人看来可能难以理解。",
-        "以往重要经历: 芳芳的家庭环境可能对她的心理健康产生了重要影响。她与父母的关系一般，感觉受到父亲的压制，这可能加剧了她的情绪问题。与弟弟关系不佳和奶奶的偏心可能使她在家庭中感到更加孤立。此外，她在学校的人际关系问题可能进一步加剧了她的孤独感和情绪低落。"
-    ],
-    [
-        "基本信息: 小莹，女，研二学生，第一次进行心理咨询。",
-        "主诉:小莹来自四口之家，有一位小六岁的弟弟患有严重身体疾病。小时候被爷爷奶奶宠爱，二年级后回到父母家与妈妈生活，感到妈妈冷漠、漠视。她觉得自己应对压力能力差，近期心情低落，对外界环境敏感。去年忙于导师项目组工作，敬佩的带教老师刚刚离职。现在她感到无人管理，按部就班完成项目，但可能因长期压力导致入睡困难。她曾在高二时因学习压力和同学干扰出现类似情况，严重失眠，后通过就医改善。大学时与室友关系好，但对室友动静敏感，通过转移注意力改善。现在研究生室友动静不大，但她仍敏感，希望心理咨询帮助改善睡眠和调节情绪。",
-        "问题行为发展史: 小莹的问题行为可能始于小时候与父母分离，感受到妈妈的冷漠。她的压力应对能力可能在成长过程中逐渐形成，尤其是在高二时因学习压力和同学干扰导致的失眠。她可能缺乏有效的情绪调节和压力管理技巧，导致在遇到挑战时感到难以应对。",
-        "以往重要经历:小莹可能在这之前有过类似的经历，但没有得到适当的关注和处理。她的家庭环境可能缺乏足够的支持和理解，导致她在面对问题时感到孤立无援。此外，她可能缺乏有效的应对策略和情绪调节技巧，难以处理日常生活中的压力和挑战。"
-    ]
-
-]
-
-# 语言风格信息更新
-    language_styles = {
-    "情绪表达型": "使用情绪化的语言表达内心感受，可能情绪波动较大。",
-    "逻辑分析型": "倾向于使用逻辑严谨的方式描述问题，强调事实和逻辑性。",
-    "内向沉默型": "通常较为内向和沉默，需要更多的时间和空间来开放。",
-    "冲突应对型": "可能在沟通中表现出冲突倾向，需要耐心和善意引导。",
-    "解决方案导向型": "倾向于寻求实际的解决方案和建议，强调实用性和可操作性。"
-}
-    selected_background = random.choice(role_backgrounds)
-    selected_language_style = random.choice(list(language_styles.keys()))
-    prompt = f""" 
-    请你模拟一个心理咨询中的来访者，并时刻记得自己是带着问题来做心理咨询的。
-    根据对话的进展，随机生成一个与当前对话匹配的背景故事，例如家庭、工作或个人问题。
-    受人际关系困扰的心理咨询来访者可能会表达出对人际互动的困惑、挫败、悲伤或愤怒。他们的言谈可能会反映出他们在建立和维护关系时所遇到的困难。以下是一些可能的表述：
-1. **社交焦虑**：
-   - "我害怕参加聚会或社交活动，我总觉得自己会说错话或做错事。"
-   - "每次和陌生人交谈时，我都很紧张，我会不自觉地出汗，心跳加速。"
-2. **感觉被误解或不被接受**：
-   - "我觉得同事们总是误解我的意图，他们好像不太喜欢我。"
-   - "我在朋友圈子里感觉像个局外人，我似乎无法融入他们的圈子。"
-3. **冲突和争吵**：
-   - "我经常和同事发生争执，我觉得他们不尊重我的意见。"
-   - "我和我的朋友/伴侣总是为了一些小事争吵，我感觉我们的关系越来越紧张。"
-4. **缺乏深层次连接**：
-   - "我有很多朋友，但我觉得没有人真正了解我。"
-   - "我在人群中感到孤独，我渴望有一个真正懂我的人。"
-5. **情感依赖或被依赖**：
-   - "我发现自己总是在取悦别人，我害怕失去他们的喜爱。"
-   - "我觉得我的伴侣太依赖我了，我无法承受这种压力。"
-6. **边界问题**：
-   - "我不擅长说‘不’，别人总是让我做我不愿意做的事情。"
-   - "我的家人/朋友总是不尊重我的个人空间，我感觉自己没有隐私。"
-7. **寻求理解和解决方案**：
-   - "我来咨询是因为我想知道如何改善我的人际关系，我希望能够更自在地与他人相处。"
-   - "我需要帮助来理解为什么我在人际关系中总是遇到问题，以及我该如何应对。"
-
-    对话初期不要生硬的介绍自己的信息，要随着对方的问题逐渐透露自己的信息，回答长度不超过50字。
-
-    让我描述一下这位来访者：
-    - 语言特点：{selected_language_style}
-    - 主诉或求助问题：
-    {selected_background}
-
-    现在，请根据这些信息，像一个受人际关系问题困扰的来访者一样回答我的问题。
-
-    # 过去的聊天记录： === {conversation_history}
-    """
-
-    response = call_gpt_api([
-     {"role": "system", "content": "You are a helpful assistant."},
-     {"role": "user", "content": prompt}
-    ])
-    return response
-
-#自我成长问题来访者
-def role_b_conversation(conversation_history):
-    role_backgrounds = [
-    [
-        "基本信息: 小黄是一位11岁的六年级女生，性格外向，喜欢并擅长体育运动，且在学校的人际关系良好。这是她第一次接受心理辅导。她因持续两周感到情绪低落，并在朋友的陪同下主动前来咨询。她的外祖母在几个月前意外离世，这对她造成了极大的心理影响。",
-        "主诉:小黄的主要问题是难以接受外祖母意外离世的事实，她感到非常懊恼，认为自己没有让外祖母感到骄傲。在咨询前的几周，她发现自己无法专心做任何事情，频繁流泪，并且总是无法控制地担心父母也会发生意外。",
-        "问题行为发展史: 小黄的问题行为可能源于她对外祖母的离世所产生的深切的悲伤和内疚感。她与外祖母感情深厚，因此外祖母的离世对她来说是一个巨大的打击。她的情绪低落、无法专心以及频繁流泪可能是她悲伤和焦虑情绪的直接表现。",
-        "以往重要经历: 小黄的外祖母对她的生活有着重要的影响。外祖母的离世可能触发了她对失去亲人的深刻恐惧，尤其是对父母安全的过度担忧。她的这些反应可能也与她对自己与外祖母关系的反思有关，她可能感到自己没有足够地表达对外祖母的爱和感激。"
-    ],
-    [
-        "基本信息:小欣是一位11岁的六年级女生，性格较外向，具有较好的言语表达和情感表达能力。她在学习上一直表现出色，但近期在学校表现出消极态度，动作变得缓慢，上课时容易走神。这是她第二次接受心理辅导。",
-        "主诉:小欣近期感到颓废，难以集中精神，并出现了以排解情绪为目的的自伤行为。她的心情低落，食欲不佳，但并未对家人发脾气，而是选择独自静坐，有时会进行自伤。她表示以前在手面上刮过很多道痕，妈妈也知道。目前手上可见多处轻痕，但在同一处，她自述最近自伤行为有所减少和减轻。她有求助的意愿，并希望解决自己对父亲发脾气的困惑，以及对于被禁止与男女同学往来的担忧，害怕自己会没有朋友。",
-        "问题行为发展史: 小欣的问题行为可能源于她近期在学校和家庭中的压力和挑战。她的消极态度、动作缓慢和上课走神可能是她应对内心压力和情绪问题的一种表现。她的自伤行为可能是她试图自我调节情绪的一种方式，尽管这在他人看来可能难以理解。",
-        "以往重要经历: 小欣的家庭环境可能对她的心理健康产生了重要影响。她感觉自己的学业成就未被家长看到，这可能使她感到自己的努力没有得到认可。她对父亲发脾气的困惑，以及被禁止与同学往来的担忧，可能反映了她在家庭和社交方面的压力。她害怕失去朋友，这可能加剧了她的孤独感和情绪问题。"
-    ],
-   
-    [
-        "基本信息：小F，男，职高一年级学生，首次进行心理咨询。他原是一个成绩优异、乐观开朗的孩子。"
-        "主诉：小F自小学五年级开始，父母经常当着他的面吵架，闹离婚。六年级时，他曾因父母闹离婚而离家出走。初一下学期，父母离异，但仍住在一起。小F因小事与老师发生冲突后不肯上学，有自杀念头，被诊断中度抑郁，居家服药治疗，后一直未上学。初二期间，他到C市学习打网络游戏，想成为职业游戏玩家，但感觉没有上升空间。初三年级时，他到G市上职校学习，因服药副作用睡过头，被批评后与职校老师发生冲突，回家休养。母亲感到自己毁了孩子，无助，于是让孩子前来咨询。"
-        "问题行为发展史：小F的问题行为起始于父母关系紧张和离异，导致他对家庭和学校环境的不满。他的逃避行为可能是对现实生活中的压力和不满的回应。他的抑郁和自杀念头可能是对生活困境的绝望和无力感。"
-        "以往重要经历：小F可能从小经历了父母关系紧张和离异，导致他对家庭和学校环境的不满。他的行为可能是对过去经历的回应，或者是在寻求自我认同和独立性。此外，他可能缺乏有效的应对压力和情绪管理技巧。"
-    ]
-
-]
-
-# 语言风格信息更新
-    language_styles = {
-    "情绪表达型": "使用情绪化的语言表达内心感受，可能情绪波动较大。",
-    "逻辑分析型": "倾向于使用逻辑严谨的方式描述问题，强调事实和逻辑性。",
-    "内向沉默型": "通常较为内向和沉默，需要更多的时间和空间来开放。",
-    "冲突应对型": "可能在沟通中表现出冲突倾向，需要耐心和善意引导。",
-    "解决方案导向型": "倾向于寻求实际的解决方案和建议，强调实用性和可操作性。"
-}
-    selected_background = random.choice(role_backgrounds)
-    selected_language_style = random.choice(list(language_styles.keys()))
-    prompt = f""" 
-    请你模拟一个心理咨询中的来访者，并时刻记得自己是带着问题来做心理咨询的。
-    根据对话的进展，随机生成一个与当前对话匹配的背景故事，例如家庭、工作或个人问题。
-    受自我成长问题困扰的心理咨询来访者可能会表现出对个人发展、自我认知和未来规划的困惑或焦虑。他们可能在探索自己的价值观、生活目标或职业方向时遇到困难。以下是一些可能的表述：
-#自我探索：
-“我对自己的未来感到迷茫，我不知道我想要什么，也不知道我的人生目标是什么。”
-“我一直在思考我到底是谁，我的生活中真正重要的是什么。”
-#自我怀疑和不确定性：
-“我总是怀疑自己的能力，我不确定我是否能够实现我的梦想。”
-“我害怕做决定，因为我担心我会做出错误的选择。”
-#成长停滞感：
-“我感觉自己好像卡住了，无论是在职业上还是个人生活中，我都没有成长。”
-“我看着我周围的人都在进步，而我却好像在原地踏步。”
-#对变化的恐惧：
-“我知道我需要改变，但是改变的想法让我感到害怕和不安。”
-“我害怕离开我的舒适区，即使我知道那里可能没有什么发展的空间。”
-#寻求意义和满足感：
-“我渴望找到能够给我带来满足感和意义的事情，但我不知道从哪里开始。”
-“我觉得我的生活缺少目的，我想找到能够激励我前进的东西。”
-#自我评价和自尊问题：
-“我总是批评自己，我觉得自己不够好，不值得被爱或成功。”
-“我很难接受自己的不完美，我总是对自己有不切实际的高要求。”
-#寻求指导和启发：
-“我来咨询是因为我需要指导，我想要了解如何才能实现自我成长。”
-“我希望能够找到激励我追求自我发展的动力和策略。”
-    对话初期不要生硬的介绍自己的信息，要随着对方的问题逐渐透露自己的信息，回答长度不超过50字。
-
-    让我描述一下这位来访者：
-    - 语言特点：{selected_language_style}
-    - 主诉或求助问题：
-    {selected_background}
-
-    现在，请根据这些信息，像一个受自我探索问题困扰的来访者一样回答我的问题。
-
-    # 过去的聊天记录： === {conversation_history}
-    """
-
-    response = call_gpt_api([
-     {"role": "system", "content": "You are a helpful assistant."},
-     {"role": "user", "content": prompt}
-    ])
-    return response
 ##
 # Streamlit 应用程序界面
 #st.title("🤖 AI 心理来访者")
@@ -440,7 +144,7 @@ def sidebar_bg(side_bg):
 # 调用
 sidebar_bg('side.png')
 # 在侧边栏添加不同的机器人栏
-st.sidebar.header("选择机器人")
+st.sidebar.header("请选择案例吧~")
 st.markdown(
     """
     <style>
@@ -452,90 +156,192 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 初始化 selected_bot 和 conversation_history
+# 调用JSON文件中的案例1
+file_path = '/Users/doudoudou/Desktop/zhuo/cases.json'  
+cases = load_cases(file_path)
+
+# 安全初始化对话历史
+# 安全初始化 selected_bot
 if "selected_bot" not in st.session_state:
-    st.session_state["selected_bot"] = "性心理案例"
-    st.session_state["conversation_history"] = [{"role": "Bot", "content": "你好，你就是我今天的咨询师吗……"}]
+    st.session_state["selected_bot"] = None  # 可以设置为None或者任何默认值
+
+if "conversation_history" not in st.session_state:
+    st.session_state["conversation_history"] = []
+
+# 欢迎消息
+if "welcome_shown" not in st.session_state:
+    st.session_state["welcome_shown"] = True
+    st.write("欢迎您，现在请选择案例和我对话吧，祝您一切顺利~")
+
+# 示例：向对话历史添加消息
+def add_message_to_history(message):
+    st.session_state["conversation_history"].append({"role": "Bot", "content": message})
+
+# 在页面上显示对话历史
+for chat in st.session_state["conversation_history"]:
+    st.markdown(f"{chat['role']}: {chat['content']}")
+
+# 根据需要继续添加其他业务逻辑
 
 
-# 按钮点击时更新 selected_bot，并为每个按钮提供唯一的 key
-if st.sidebar.button("性心理案例", key="emotional_distress"):
-    st.session_state["selected_bot"] = "性心理案例"
-    st.session_state["conversation_history"] = [{"role": "Bot", "content": "你好，你就是我今天的咨询师吗……"}]
-    st.experimental_rerun()
-if st.sidebar.button("亲子问题案例", key="parenting_issues"):
-    st.session_state["selected_bot"] = "亲子问题案例"
-    st.session_state["conversation_history"] = [{"role": "Bot", "content": "你好，你就是我今天的咨询师吗……"}]
-    st.experimental_rerun()
-if st.sidebar.button("学业压力案例", key="workplace_stress"):
-    st.session_state["selected_bot"] = "学业压力案例"
-    st.session_state["conversation_history"] = [{"role": "Bot", "content": "你好，你就是我今天的咨询师吗……"}]
-    st.experimental_rerun()
-if st.sidebar.button("人际关系案例", key="interpersonal_relationships"):
-    st.session_state["selected_bot"] = "人际关系案例"
-    st.session_state["conversation_history"] = [{"role": "Bot", "content": "你好，你就是我今天的咨询师吗……"}]
-    st.experimental_rerun()
-if st.sidebar.button("自我成长案例", key="self_growth"):
-    st.session_state["selected_bot"] = "自我成长案例"
-    st.session_state["conversation_history"] = [{"role": "Bot", "content": "你好，你就是我今天的咨询师吗……"}]
-    st.experimental_rerun()
+# 创建分组案例按钮
+cases_per_group = 10
+num_groups = (len(cases) // cases_per_group) + (1 if len(cases) % cases_per_group != 0 else 0)
 
+for i in range(num_groups):
+    group_start = i * cases_per_group
+    group_end = min((i + 1) * cases_per_group, len(cases))
+    group_label = f"组{i + 1}：案例{group_start+1}-{group_end}"
+    
+    with st.sidebar.expander(group_label, expanded=False):
+        for case in cases[group_start:group_end]:  # 直接迭代部分案例列表
+            case_number = case["Case Number"]
+            button_key = f"button_{case_number}"  # 为每个按钮创建唯一的key
+            if st.button(case_number, key=button_key):
+                st.session_state["selected_case"] = case  # 存储选择的案例
+
+# 显示选中的案例信息
+if "selected_case" in st.session_state:
+    case = st.session_state["selected_case"]
+    st.markdown(f"### 案例信息\n\n**案例编号:** {case['Case Number']}\n\n**一般资料:** {case['General Information']}\n\n**基本信息:** {case['Basic Information']}")
+
+
+##############
 # 显示对话历史
 for chat in st.session_state["conversation_history"]:
     if chat["role"] == "用户":
-        # 使用医生头像和名字“咨询师”，并把它们放在右边
+        # 使用医生头像和名字“咨询师”，并把它们放在右边，同时确保文字颜色为黑色
         st.markdown(
             f"""
             <div style='text-align: right; margin-bottom: 20px;'>
                 <div style='font-size: 16px; color: #808080 ;'>👨‍⚕️ 咨询师</div>
-                <div style='display: inline-block; background-color:#E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px;'>{chat['content']}</div>
+                <div style='display: inline-block; background-color:#E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
             </div>
             """, 
             unsafe_allow_html=True
         )
     else:
-        # 使用成年人头像和名字“AI”，并保持在左边
+        # 使用成年人头像和名字“AI”，并保持在左边，同时确保文字颜色为黑色
         st.markdown(
             f"""
             <div style='text-align: left; margin-bottom: 20px;'>
                 <div style='font-size: 16px; color:#808080 ;'>🧑 AI</div>
-                <div style='display: inline-block; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px;'>{chat['content']}</div>
+                <div style='display: inline-block; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
             </div>
             """, 
             unsafe_allow_html=True
         )
 
 
-# 用户输入框
-user_input = st.text_input("你的回复:")
+# 发送消息函数
+## 加载案例数据
+def load_cases(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        cases = json.load(f)
+    return cases
 
-# 发送按钮
-if st.button("发送"):
+# 确保在会话状态中初始化案例数据
+if "cases" not in st.session_state:
+    st.session_state['cases'] = load_cases('/Users/doudoudou/Desktop/zhuo/cases.json')  # 修改为你的实际案例文件路径
+
+# # 发送消息函数
+def send_message():
+    user_input = st.session_state['user_input']
     if user_input:
         # 添加用户输入到对话历史
         st.session_state["conversation_history"].append({"role": "用户", "content": user_input})
         with st.spinner("生成回复..."):
-            # 生成机器人的回复
-            if st.session_state["selected_bot"] == "性心理案例":
-                response = role_x_conversation(st.session_state["conversation_history"])
-            elif st.session_state["selected_bot"] == "亲子问题案例":
-                response = role_y_conversation(st.session_state["conversation_history"])
-            elif st.session_state["selected_bot"] == "学业压力案例":
-                response = role_z_conversation(st.session_state["conversation_history"])  # 假设函数名为role_z_conversation
-            elif st.session_state["selected_bot"] == "人际关系案例":
-                response = role_a_conversation(st.session_state["conversation_history"])  # 假设函数名为role_a_conversation
-            elif st.session_state["selected_bot"] == "自我成长案例":
-                response = role_b_conversation(st.session_state["conversation_history"])  # 假设函数名为role_b_conversation
+            # 从会话状态中获取选择的案例
+            selected_case = st.session_state.get("selected_case")
+            
+            if selected_case:
+                prompt = generate_prompt(selected_case, user_input, st.session_state["conversation_history"])
+                response = call_gpt_api([{"role": "system", "content": prompt}])
             else:
-                response = "未知机器人"
+                response = "请先选择一个案例再开始对话。"
+            
             # 添加机器人回复到对话历史
             st.session_state["conversation_history"].append({"role": "Bot", "content": response})
-        # 刷新页面以显示新的对话历史
-        st.experimental_rerun()
-    else:
-        st.warning("请输入你的消息。")
+        # 清空输入框
+        st.session_state['user_input'] = ""
 
 
+# 初始化会话状态
+if "user_input" not in st.session_state:
+    st.session_state['user_input'] = ""
+if "conversation_history" not in st.session_state:
+    st.session_state['conversation_history'] = []
 
+# 用户输入框
+st.text_input("你的回复:", key="user_input", on_change=send_message, value="", placeholder="输入消息并按Enter发送")
+# 发送按钮
+if st.button("发送"):
+    send_message()
 
+# def analyze_emotion(text):
+#     # 这里我们使用一个简化的方法来判断情绪
+#     # 在实际应用中，您可能需要使用更复杂的自然语言处理技术
+    
+#     emotion_keywords = {
+#         "开心": ["高兴", "快乐", "兴奋", "愉悦"],
+#         "悲伤": ["难过", "伤心", "痛苦", "沮丧"],
+#         "愤怒": ["生气", "恼火", "烦躁", "憎恨"],
+#         "恐惧": ["害怕", "担心", "焦虑", "恐慌"],
+#         "惊讶": ["震惊", "吃惊", "意外", "不可思议"],
+#         "中性": ["还好", "一般", "普通", "正常"]
+#     }
+    
+#     text = text.lower()
+#     for emotion, keywords in emotion_keywords.items():
+#         if any(keyword in text for keyword in keywords):
+#             return emotion
+    
+#     return "无法确定"
 
+# # 使用GPT API进行更复杂的情绪分析
+# def analyze_emotion_with_gpt(text):
+#     prompt = f"请分析以下文本中表达的主要情绪状态，并给出一个简短的解释：\n\n'{text}'\n\n情绪状态："
+#     response = call_gpt_api([{"role": "system", "content": prompt}])
+#     return response
+
+# # 在Streamlit应用中添加一个新的列来显示情绪分析结果
+# col1, col2 = st.columns([3, 1])
+
+# # 主对话循环
+# while True:
+#     # 在col1中显示主要对话
+#     with col1:
+#         user_input = st.text_input("咨询师:", key="user_input")
+#         if user_input:
+#             # 处理用户输入...
+#             response = call_gpt_api([{"role": "system", "content": prompt}, {"role": "user", "content": user_input}])
+#             st.session_state.conversation_history.append({"role": "用户", "content": user_input})
+#             st.session_state.conversation_history.append({"role": "AI", "content": response})
+            
+#             # 显示对话
+#             for message in st.session_state.conversation_history:
+#                 st.write(f"{message['role']}: {message['content']}")
+    
+#     # 在col2中显示情绪分析结果
+#     with col2:
+#         if st.session_state.conversation_history:
+#             last_ai_message = next((message['content'] for message in reversed(st.session_state.conversation_history) if message['role'] == 'AI'), None)
+#             if last_ai_message:
+#                 emotion = analyze_emotion_with_gpt(last_ai_message)
+#                 st.write("情绪分析:")
+#                 st.write(emotion)
+
+#     # 添加一个按钮来结束对话
+#     if st.button("结束对话"):
+#         break
+
+#     show_emotion_analysis = st.sidebar.checkbox("显示情绪分析", value=True)
+
+#     # 在col2中显示情绪分析结果
+# with col2:
+#     if show_emotion_analysis and st.session_state.conversation_history:
+#         last_ai_message = next((message['content'] for message in reversed(st.session_state.conversation_history) if message['role'] == 'AI'), None)
+#         if last_ai_message:
+#             emotion = analyze_emotion_with_gpt(last_ai_message)
+#             st.write("情绪分析:")
+#             st.write(emotion)

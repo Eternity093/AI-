@@ -157,7 +157,7 @@ st.markdown(
 )
 
 # 调用JSON文件中的案例1
-file_path = 'D:\desktop\来访者代码\cases.json'  
+file_path = 'cases.json'  
 cases = load_cases(file_path)
 
 # 安全初始化对话历史
@@ -242,7 +242,7 @@ def load_cases(file_path):
 
 # 确保在会话状态中初始化案例数据
 if "cases" not in st.session_state:
-    st.session_state['cases'] = load_cases('D:\desktop\来访者代码\cases.json')  # 修改为你的实际案例文件路径
+    st.session_state['cases'] = load_cases('cases.json')  # 修改为你的实际案例文件路径
 
 # # 发送消息函数
 def send_message():

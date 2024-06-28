@@ -3,6 +3,8 @@ import httpx
 import random
 import base64
 import json
+import requests
+import os
 
 # 设置 API 密钥和 URL
 API_KEY = "sk-NeXv4MMqXrlq6xQbAaEdB925C9Ae4493B30d7d85A637B5Dc"
@@ -177,9 +179,64 @@ if "welcome_shown" not in st.session_state:
 def add_message_to_history(message):
     st.session_state["conversation_history"].append({"role": "Bot", "content": message})
 
+
 # 在页面上显示对话历史
-for chat in st.session_state["conversation_history"]:
-    st.markdown(f"{chat['role']}: {chat['content']}")
+if "conversation_history" in st.session_state:
+    for chat in st.session_state["conversation_history"]:
+        st.markdown(f"{chat['role']}: {chat['content']}")
+
+# 保存对话历史到本地文件
+def save_conversation_to_file(filename):
+    with open(filename, 'w', encoding='utf-8') as f:
+        for chat in st.session_state.get("conversation_history", []):
+            f.write(f"{chat['role']}: {chat['content']}\n")
+
+# 上传文件到GitHub
+def upload_file_to_github(filename, repo, path, token):
+    with open(filename, 'rb') as f:
+        content = base64.b64encode(f.read()).decode('utf-8')
+
+    url = f"https://api.github.com/repos/{repo}/contents/{path}"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # 检查文件是否存在
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        sha = response.json()['sha']
+        data = {
+            "message": "Update conversation history",
+            "content": content,
+            "sha": sha
+        }
+    else:
+        data = {
+            "message": "Add conversation history",
+            "content": content
+        }
+
+    response = requests.put(url, headers=headers, json=data)
+    if response.status_code in [200, 201]:
+        st.success("File uploaded to GitHub successfully")
+    else:
+        st.error(f"Failed to upload file: {response.json()}")
+
+# 用户名输入框
+username = st.text_input("Enter your username")
+
+# 添加一个按钮，用于保存对话历史并上传到GitHub
+if st.button("Save Conversation History to GitHub"):
+    if username:
+        file_name = f"{username}_conversation_history.txt"
+        save_conversation_to_file(file_name)
+        repo = "Eternity093/AI-"  # 替换为你的GitHub仓库
+        path = f"history/{file_name}"
+        token = st.secrets["github"]["access_token"]
+        upload_file_to_github(file_name, repo, path, token)
+    else:
+        st.error("Please enter a username")
 
 # 根据需要继续添加其他业务逻辑
 

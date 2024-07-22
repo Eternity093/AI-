@@ -210,7 +210,7 @@ for i in range(num_groups):
                 if case_number not in st.session_state["case_conversations"]:
                     st.session_state["case_conversations"][case_number] = []
                 st.session_state["conversation_history"] = st.session_state["case_conversations"][case_number]
-                st.experimental_rerun()
+                st.rerun()
 
 # 显示选中的案例信息
 if "selected_case" in st.session_state:
@@ -330,18 +330,28 @@ def send_button():
         send_message()
     
 # 上传按钮，用于将本地文件上传到GitHub
-def upload_button():
-    if st.button("上传到GitHub"):
-        if not username:
-            st.error("Please enter a username before uploading.")
-            return
+# def upload_button():
+#     if st.button("上传到GitHub"):
+#         if not username:
+#             st.error("Please enter a username before uploading.")
+#             return
         
-        file_name = f"{username}_conversation_history.txt"
-        repo = "Eternity093/AI-"  # 替换为你的GitHub仓库
-        path = f"history/{file_name}"
-        token = st.secrets["access_token"]
-        upload_file_to_github(file_name, repo, path, token)
+#         file_name = f"{username}_conversation_history.txt"
+#         repo = "Eternity093/AI-"  # 替换为你的GitHub仓库
+#         path = f"history/{file_name}"
+#         token = st.secrets["access_token"]
+#         upload_file_to_github(file_name, repo, path, token)
+
+# 下载按钮，用于将聊天历史记录下载为txt文件
+def download_button():
+    st.download_button(
+        label="下载聊天历史为txt",
+        data=chat_history,
+        file_name=f"{username}_conversation_history.txt",
+        mime="text/plain"
+    )
 
 # 调用按钮函数
 send_button()
-upload_button()
+#upload_button()
+download_button()

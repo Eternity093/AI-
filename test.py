@@ -270,7 +270,7 @@ def send_message():
         # 清空输入框
         del st.session_state['user_input']
         st.session_state['user_input'] = ''
-        st.experimental_rerun()
+        st.rerun()
         
 
 
@@ -339,7 +339,7 @@ def upload_button():
         file_name = f"{username}_conversation_history.txt"
         repo = "Eternity093/AI-"  # 替换为你的GitHub仓库
         path = f"history/{file_name}"
-        token = st.secrets["github"]["access_token"]
+        token = st.secrets["access_token"]
         upload_file_to_github(file_name, repo, path, token)
 
 # 调用按钮函数

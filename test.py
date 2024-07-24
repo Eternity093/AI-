@@ -244,20 +244,22 @@ for chat in st.session_state["conversation_history"]:
 
 # 发送按钮，并在发送消息后保存历史记录
 def send_message():
+    user_input = st.session_state['user_input']
+    if user_input:
     # 添加用户输入到对话历史
-    st.session_state["conversation_history"].append({"role": "用户", "content": user_input})
-    with st.spinner("生成回复..."):
-        # 从会话状态中获取选择的案例
-        selected_case = st.session_state.get("selected_case")
-        
-        if selected_case:
-            prompt = generate_prompt(selected_case, user_input, st.session_state["conversation_history"])
-            response = call_gpt_api([{"role": "system", "content": prompt}])
-        else:
-            response = "请先选择一个案例再开始对话。"
-        
-        # 添加机器人回复到对话历史
-        st.session_state["conversation_history"].append({"role": "Bot", "content": response})
+        st.session_state["conversation_history"].append({"role": "用户", "content": user_input})
+        with st.spinner("生成回复..."):
+            # 从会话状态中获取选择的案例
+            selected_case = st.session_state.get("selected_case")
+            
+            if selected_case:
+                prompt = generate_prompt(selected_case, user_input, st.session_state["conversation_history"])
+                response = call_gpt_api([{"role": "system", "content": prompt}])
+            else:
+                response = "请先选择一个案例再开始对话。"
+            
+            # 添加机器人回复到对话历史
+            st.session_state["conversation_history"].append({"role": "Bot", "content": response})
     # 更新案例的对话历史
     selected_case_number = st.session_state["selected_case"]["Case Number"]
     st.session_state["case_conversations"][selected_case_number] = st.session_state["conversation_history"]
@@ -286,7 +288,7 @@ def save_conversation_to_string(conversation_history, selected_case):
 
 selected_case = st.session_state.get("selected_case", {"Case Number": "未选择"})
 
-# 在Streamlit应用中生成聊天历史记录字符串
+#在Streamlit应用中生成聊天历史记录字符串
 conversation_str = save_conversation_to_string(st.session_state["conversation_history"], selected_case)
 # 发送按钮，并在发送消息后保存历史记录
 def send_button():
@@ -296,7 +298,7 @@ def send_button():
             return
         
         send_message()
-# 下载按钮，用于将聊天历史记录下载为txt文件
+#下载按钮，用于将聊天历史记录下载为txt文件
 def download_conversation_button(conversation_str):
     file_name = f"{username}_conversation_history.txt"
     st.download_button(

@@ -343,15 +343,15 @@ def send_button():
 #         upload_file_to_github(file_name, repo, path, token)
 
 # 下载按钮，用于将聊天历史记录下载为txt文件
-def download_button():
-    st.download_button(
-        label="下载聊天历史为txt",
-        data=chat_history,
-        file_name=f"{username}_conversation_history.txt",
-        mime="text/plain"
-    )
+# def download_button():
+#     st.download_button(
+#         label="下载聊天历史为txt",
+#         data=chat_history,
+#         file_name=f"{username}_conversation_history.txt",
+#         mime="text/plain"
+#     )
 
 # 调用按钮函数
 send_button()
 #upload_button()
-download_button()
+# download_button()

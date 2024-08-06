@@ -3,7 +3,7 @@ import json
 ##总结旧对话
 def summarize_old_conversation_history(conversation_history):
     # 提取旧的对话历史
-    old_messages = conversation_history[:-10]
+    old_messages = conversation_history[:-200]
     # 在这里添加总结算法
     # 提取每一轮对话的主题
     topics = [message['content'][:50] + '...' for message in old_messages]

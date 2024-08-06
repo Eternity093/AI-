@@ -71,8 +71,7 @@ conversation_template = """
     13. 描述任何相关的身体症状，先笼统提及，随对话深入逐步具体化。\n
     14. 保持语言风格的一致性，确保与你的角色特点相符。\n\n
     以上信息和指引将帮助你更准确地扮演来访者角色，记得根据对话的发展适时透露信息，使对话更加自然和符合心理咨询的过程。\n\n
-    旧的聊天记录总结：===\n{old_conversation_summary}\n
-    最近的聊天记录：===\n{recent_conversation}\n
+    这是对话历史{conversation_history}
     咨询师(Therapist)最后的一句话是：{user_input}，请生成你的下一句话。
 """
 

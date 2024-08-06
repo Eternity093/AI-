@@ -1,20 +1,21 @@
 # ========== Python 环境准备 ========== #
-import os
+
 import streamlit as st
 import base64
 import requests
 import utilities
 import implementation
-from dotenv import load_dotenv
-# 加载.env文件中的环境变量
-load_dotenv()
-openai_api_key=os.getenv("OPENAI_API_KEY")
-BASE_URL= "https://api.xiaoai.plus/v1"
+import os
+
+os.environ["OPENAI_API_BASE"] = 'https://api.xiaoai.plus/v1'
+os.environ["OPENAI_API_KEY"] = 'sk-TWqvakjKo0TlqN7YE1Df97488f8446Ce8eAC79A081A74357'
+
+
 # 初始化代理实现
 agent_implementation = implementation.AgentImplementation()
 
 # 案例文件路径
-file_path = 'cases.json'  
+file_path = r'cases.json'  
 # 加载案例
 cases = utilities.load_cases(file_path)
 
@@ -42,7 +43,8 @@ def main_bg(main_bg):
     )
 
 # 调用背景图片函数
-main_bg('main.png')
+bg = r'main.png'
+main_bg(bg)
 
 # 更改侧边栏样式
 def sidebar_bg(side_bg):
@@ -59,10 +61,11 @@ def sidebar_bg(side_bg):
    )
 
 # 调用侧边栏背景图片函数
-sidebar_bg('side.png')
+side = r'side.png'
+sidebar_bg(side)
 
 # 在侧边栏添加不同的机器人栏
-st.sidebar.header("请选择案例吧~")
+st.sidebar.header("请选择案例")
 
 st.markdown(
     """
@@ -136,28 +139,7 @@ if "selected_case" in st.session_state:
     basic_info = case.get("Basic Information", "无基本信息")
     st.markdown(f"### 案例信息\n\n**案例编号:** {case.get('Case Number', '无案例编号')}\n\n**一般资料:** {general_info}\n\n**基本信息:** {basic_info}")
 
-# 设置对话框样式并显示对话内容
-for chat in st.session_state["conversation_history"]:
-    if chat["role"] == "client":
-        st.markdown(
-            f"""
-            <div style='text-align: right; margin-bottom: 20px;'>
-                <div style='font-size: 16px; color: #808080 ;'>👨‍⚕️ 来访者</div>
-                <div style='display: inline-block; background-color:#E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            f"""
-            <div style='text-align: left; margin-bottom: 20px;'>
-                <div style='font-size: 16px; color:#808080 ;'>🧑 咨询师</div>
-                <div style='display: inline-block; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
+
 
 # 将对话历史转换为字符串的函数
 def conversation_history_to_string(conversation_history):

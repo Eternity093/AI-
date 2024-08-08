@@ -1,4 +1,3 @@
-
 # ========== Python 环境准备 ========== #
 
 import streamlit as st
@@ -114,16 +113,20 @@ filtered_cases = [case for case in cases if search_query in case["Case Number"]]
 
 # 创建分组案例按钮
 cases_per_group = 10
-num_groups = (len(filtered_cases) // cases_per_group) + (1 if len(filtered_cases) % cases_per_group != 0 else 0)
+num_groups = (len(filtered_cases) + cases_per_group - 1) // cases_per_group
 
 for i in range(num_groups):
-    group_start = i * cases_per_group
-    group_end = min((i + 1) * cases_per_group, len(filtered_cases))
-    group_label = f"组{i + 1}：案例{group_start+1}-{group_end}"
-    
+    group_start_number = i * cases_per_group + 1
+    group_end_number = (i + 1) * cases_per_group
+
+    group_cases = [case for case in filtered_cases
+                   if group_start_number <= int(case["Case Number"][2:].replace(":", "")) <= group_end_number]
+
+    group_label = f"组{i + 1}：案例{group_start_number}-{group_end_number}"
+
     with st.sidebar.expander(group_label, expanded=False):
-        for case in filtered_cases[group_start:group_end]:  # 直接迭代部分案例列表
-            case_number = case["Case Number"]
+        for case in group_cases:
+            case_number = case["Case Number"].replace(":", "")
             button_key = f"button_{case_number}"  # 为每个按钮创建唯一的key
             if st.button(case_number, key=button_key):
                 st.session_state["selected_case"] = case  # 存储选择的案例
@@ -132,15 +135,6 @@ for i in range(num_groups):
                     st.session_state["case_conversations"][case_number] = []
                 st.session_state["conversation_history"] = st.session_state["case_conversations"][case_number]
                 st.rerun()
-
-# 显示选中的案例信息
-if "selected_case" in st.session_state:
-    case = st.session_state["selected_case"]
-    general_info = case.get("General Information", "无一般资料")
-    basic_info = case.get("Basic Information", "无基本信息")
-    st.markdown(f"### 案例信息\n\n**案例编号:** {case.get('Case Number', '无案例编号')}\n\n**一般资料:** {general_info}\n\n**基本信息:** {basic_info}")
-
-
 
 # 将对话历史转换为字符串的函数
 def conversation_history_to_string(conversation_history):
@@ -151,9 +145,67 @@ def conversation_history_to_string(conversation_history):
         conversation_str += f"{role}: {content}\n"
     return conversation_str
 
+# 假设AgentImplementation已经被正确初始化
+agent_implementation = implementation.AgentImplementation()
+
+# 主动发消息，使用GPT生成开场白
+def generate_opening_message(case):    
+    personality = utilities.generate_personality()
+    general_info = case.get("General Information", "无一般资料")
+    basic_info = case.get("Basic Information", "无基本信息")
+    conversation_history = ""  # 开场白通常是对话的开始，因此没有之前的对话历史
+    self = f"你要根据下面信息模仿一个去心理咨询的真实来访者，你的信息为：{general_info}。你来这里咨询的原因是因为：{basic_info}，你的个性是{personality}。请根据这些信息主动说话和咨询师开始聊天，只需要说一两句话就可以了，保持你的警惕，不要泄露你的很多信息。记住，你只是想主动开启话题，不要一上来就好像闲聊了，你简单打招呼也可以，要符合你的人物性格和背景"
+    
+    # 调用GPT生成开场白
+    opening_message = agent_implementation.generate_conversation(self, conversation_history, case)
+    return opening_message
+
+# 检查是否需要发送开场白
+def check_and_send_opening_message():
+    selected_case = st.session_state.get("selected_case")
+    if selected_case:
+        case_number = selected_case.get("Case Number")
+        # 使用案例编号作为标记的键
+        if case_number and f"opening_sent_{case_number}" not in st.session_state:
+            opening_message = generate_opening_message(selected_case)
+            st.session_state["conversation_history"].append({"role": "client", "content": opening_message})
+            st.session_state[f"opening_sent_{case_number}"] = True  # 标记该案例的开场白已发送
+
+# 显示选中的案例信息
+if "selected_case" in st.session_state:
+    case = st.session_state["selected_case"]
+    general_info = case.get("General Information", "无一般资料")
+    basic_info = case.get("Basic Information", "无基本信息")
+    st.markdown(f"### 案例信息\n\n**案例编号:** {case.get('Case Number', '无案例编号')}\n\n**一般资料:** {general_info}\n\n**基本信息:** {basic_info}")
+
+    # 检查并可能发送开场白
+    check_and_send_opening_message()
+
+
+# # 检查是否需要发送开场白
+# def check_and_send_opening_message():
+#     selected_case = st.session_state.get("selected_case")
+#     if selected_case and "opening_sent" not in st.session_state:
+#         case = selected_case
+#         opening_message = generate_opening_message(case)
+#         st.session_state["conversation_history"].append({"role": "client", "content": opening_message})
+#         st.session_state["opening_sent"] = True  # 标记开场白已发送
+#         print("2")
+
+# # 显示选中的案例信息
+# if "selected_case" in st.session_state:
+#     case = st.session_state["selected_case"]
+#     general_info = case.get("General Information", "无一般资料")
+#     basic_info = case.get("Basic Information", "无基本信息")
+#     st.markdown(f"### 案例信息\n\n**案例编号:** {case.get('Case Number', '无案例编号')}\n\n**一般资料:** {general_info}\n\n**基本信息:** {basic_info}")
+
+# # 检查并可能发送开场白
+#     check_and_send_opening_message()
+
 # 定义发送消息函数
 def send_message():
     user_input = st.session_state['user_input']
+    
     if user_input:
         with st.spinner("生成回复..."):
             # 从会话状态中获取选择的案例
@@ -235,7 +287,7 @@ for chat in st.session_state["conversation_history"]:
     if chat.get("role") == "client":
         st.markdown(
             f"""
-            <div style='text-align: right; margin-bottom: 20px;'>
+            <div style='text-align: left; margin-bottom: 20px;'>
                 <div style='font-size: 16px; color: #808080 ;'>👨‍⚕️ 来访者</div>
                 <div style='display: inline-block; text-align: left; background-color:#E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{content}</div>
             </div>
@@ -245,7 +297,7 @@ for chat in st.session_state["conversation_history"]:
     else:
         st.markdown(
             f"""
-            <div style='text-align: left; margin-bottom: 20px;'>
+            <div style='text-align: right; margin-bottom: 20px;'>
                 <div style='font-size: 16px; color:#808080 ;'>🧑 咨询师</div>
                 <div style='display: inline-block; text-align: left; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{content}</div>
             </div>

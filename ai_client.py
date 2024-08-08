@@ -24,7 +24,8 @@ cases = utilities.load_cases(file_path)
 # 设置页面标题
 st.set_page_config(page_title="AI 心理来访者", layout="wide")
 # 将标题放置在页面顶端
-st.markdown("<h1 style='text-align: center; font-size: 42px;color:#F5F5F5'>🤖 AI 心理来访者</h1>", unsafe_allow_html=True)
+
+st.markdown("<h1 style='text-align: center; font-size: 42px; color: black; background-color: #F5F5F5;'>🤖 AI 心理来访者</h1>", unsafe_allow_html=True)
 
 # 更改对话框背景
 def main_bg(main_bg):

@@ -114,12 +114,7 @@ filtered_cases = [case for case in cases if search_query in case["Case Number"]]
 # 创建分组案例按钮
 cases_per_group = 10
 num_groups = (len(filtered_cases) + cases_per_group - 1) // cases_per_group
-# 使用 Streamlit 缓存装饰器缓存 load_cases 函数的输出
-@st.cache_resource()
-def load_cases(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        cases = json.load(f)
-    return cases
+
 for i in range(num_groups):
     group_start_number = i * cases_per_group + 1
     group_end_number = (i + 1) * cases_per_group
@@ -165,16 +160,16 @@ def conversation_history_to_string(conversation_history):
 #     opening_message = agent_implementation.generate_conversation(self, conversation_history, case)
 #     return opening_message
 
-# 检查是否需要发送开场白
-def check_and_send_opening_message():
-    selected_case = st.session_state.get("selected_case")
-    if selected_case:
-        case_number = selected_case.get("Case Number")
-        # 使用案例编号作为标记的键
-        if case_number and f"opening_sent_{case_number}" not in st.session_state:
-            opening_message = generate_opening_message(selected_case)
-            st.session_state["conversation_history"].append({"role": "client", "content": opening_message})
-            st.session_state[f"opening_sent_{case_number}"] = True  # 标记该案例的开场白已发送
+# # 检查是否需要发送开场白
+# def check_and_send_opening_message():
+#     selected_case = st.session_state.get("selected_case")
+#     if selected_case:
+#         case_number = selected_case.get("Case Number")
+#         # 使用案例编号作为标记的键
+#         if case_number and f"opening_sent_{case_number}" not in st.session_state:
+#             opening_message = generate_opening_message(selected_case)
+#             st.session_state["conversation_history"].append({"role": "client", "content": opening_message})
+#             st.session_state[f"opening_sent_{case_number}"] = True  # 标记该案例的开场白已发送
 
 # 显示选中的案例信息
 if "selected_case" in st.session_state:
@@ -268,24 +263,26 @@ username = st.text_input("输入您的用户名")
 
 # 设置对话框样式并显示对话内容
 for chat in st.session_state["conversation_history"]:
-    if chat["role"] == "用户":
+    content = chat.get('content', '')
+
+    if chat.get("role") == "client":
         st.markdown(
             f"""
-            <div style='text-align: right; margin-bottom: 20px;'>
-                <div style='font-size: 16px; color: #808080 ;'>👨‍⚕️ 咨询师</div>
-                <div style='display: inline-block; background-color:#E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
+            <div style='text-align: left; margin-bottom: 20px;'>
+                <div style='font-size: 16px; color: #808080;'>🧑AI</div>
+                <div style='display: inline-block; text-align: left; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{content}</div>
             </div>
-            """, 
+            """,
             unsafe_allow_html=True
         )
     else:
         st.markdown(
             f"""
-            <div style='text-align: left; margin-bottom: 20px;'>
-                <div style='font-size: 16px; color:#808080 ;'>🧑 AI</div>
-                <div style='display: inline-block; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
+            <div style='text-align: right; margin-bottom: 20px;'>
+                <div style='font-size: 16px; color: #808080;'>👨‍⚕️咨询师</div>
+                <div style='display: inline-block; text-align: right; background-color: #E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{content}</div>
             </div>
-            """, 
+            """,
             unsafe_allow_html=True
         )
     

@@ -6,7 +6,7 @@ import requests
 import utilities
 import implementation
 import os
-
+import json
 os.environ["OPENAI_API_BASE"] = 'https://api.xiaoai.plus/v1'
 os.environ["OPENAI_API_KEY"] = 'sk-TWqvakjKo0TlqN7YE1Df97488f8446Ce8eAC79A081A74357'
 
@@ -24,7 +24,7 @@ cases = utilities.load_cases(file_path)
 # 设置页面标题
 st.set_page_config(page_title="AI 心理来访者", layout="wide")
 # 将标题放置在页面顶端
-st.markdown("<h1 style='text-align: center; font-size: 42px;color:#F5F5F5'>🤖 AI 心理来访者</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; font-size: 42px;color:，color:#F5F5F5'>🤖 AI 心理来访者</h1>", unsafe_allow_html=True)
 
 # 更改对话框背景
 def main_bg(main_bg):
@@ -114,7 +114,12 @@ filtered_cases = [case for case in cases if search_query in case["Case Number"]]
 # 创建分组案例按钮
 cases_per_group = 10
 num_groups = (len(filtered_cases) + cases_per_group - 1) // cases_per_group
-
+# 使用 Streamlit 缓存装饰器缓存 load_cases 函数的输出
+@st.cache_resource()
+def load_cases(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        cases = json.load(f)
+    return cases
 for i in range(num_groups):
     group_start_number = i * cases_per_group + 1
     group_end_number = (i + 1) * cases_per_group
@@ -146,19 +151,19 @@ def conversation_history_to_string(conversation_history):
     return conversation_str
 
 # 假设AgentImplementation已经被正确初始化
-agent_implementation = implementation.AgentImplementation()
+#agent_implementation = implementation.AgentImplementation()
 
-# 主动发消息，使用GPT生成开场白
-def generate_opening_message(case):    
-    personality = utilities.generate_personality()
-    general_info = case.get("General Information", "无一般资料")
-    basic_info = case.get("Basic Information", "无基本信息")
-    conversation_history = ""  # 开场白通常是对话的开始，因此没有之前的对话历史
-    self = f"你要根据下面信息模仿一个去心理咨询的真实来访者，你的信息为：{general_info}。你来这里咨询的原因是因为：{basic_info}，你的个性是{personality}。请根据这些信息主动说话和咨询师开始聊天，只需要说一两句话就可以了，保持你的警惕，不要泄露你的很多信息。记住，你只是想主动开启话题，不要一上来就好像闲聊了，你简单打招呼也可以，要符合你的人物性格和背景"
+# # 主动发消息，使用GPT生成开场白
+# def generate_opening_message(case):    
+#     personality = utilities.generate_personality()
+#     general_info = case.get("General Information", "无一般资料")
+#     basic_info = case.get("Basic Information", "无基本信息")
+#     conversation_history = ""  # 开场白通常是对话的开始，因此没有之前的对话历史
+#     self = f"你要根据下面信息模仿一个去心理咨询的真实来访者，你的信息为：{general_info}。你来这里咨询的原因是因为：{basic_info}，你的个性是{personality}。请根据这些信息主动说话和咨询师开始聊天，只需要说一两句话就可以了，保持你的警惕，不要泄露你的很多信息。记住，你只是想主动开启话题，不要一上来就好像闲聊了，你简单打招呼也可以，要符合你的人物性格和背景"
     
-    # 调用GPT生成开场白
-    opening_message = agent_implementation.generate_conversation(self, conversation_history, case)
-    return opening_message
+#     # 调用GPT生成开场白
+#     opening_message = agent_implementation.generate_conversation(self, conversation_history, case)
+#     return opening_message
 
 # 检查是否需要发送开场白
 def check_and_send_opening_message():
@@ -182,25 +187,6 @@ if "selected_case" in st.session_state:
     #check_and_send_opening_message()
 
 
-# # 检查是否需要发送开场白
-# def check_and_send_opening_message():
-#     selected_case = st.session_state.get("selected_case")
-#     if selected_case and "opening_sent" not in st.session_state:
-#         case = selected_case
-#         opening_message = generate_opening_message(case)
-#         st.session_state["conversation_history"].append({"role": "client", "content": opening_message})
-#         st.session_state["opening_sent"] = True  # 标记开场白已发送
-#         print("2")
-
-# # 显示选中的案例信息
-# if "selected_case" in st.session_state:
-#     case = st.session_state["selected_case"]
-#     general_info = case.get("General Information", "无一般资料")
-#     basic_info = case.get("Basic Information", "无基本信息")
-#     st.markdown(f"### 案例信息\n\n**案例编号:** {case.get('Case Number', '无案例编号')}\n\n**一般资料:** {general_info}\n\n**基本信息:** {basic_info}")
-
-# # 检查并可能发送开场白
-#     check_and_send_opening_message()
 
 # 定义发送消息函数
 def send_message():
@@ -282,14 +268,12 @@ username = st.text_input("输入您的用户名")
 
 # 设置对话框样式并显示对话内容
 for chat in st.session_state["conversation_history"]:
-    content = chat.get('content', '')
-    
-    if chat.get("role") == "client":
+    if chat["role"] == "用户":
         st.markdown(
             f"""
-            <div style='text-align: left; margin-bottom: 20px;'>
-                <div style='font-size: 16px; color: #808080 ;'>👨‍⚕️ 来访者</div>
-                <div style='display: inline-block; text-align: left; background-color:#E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{content}</div>
+            <div style='text-align: right; margin-bottom: 20px;'>
+                <div style='font-size: 16px; color: #808080 ;'>👨‍⚕️ 咨询师</div>
+                <div style='display: inline-block; background-color:#E0FFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
             </div>
             """, 
             unsafe_allow_html=True
@@ -297,14 +281,13 @@ for chat in st.session_state["conversation_history"]:
     else:
         st.markdown(
             f"""
-            <div style='text-align: right; margin-bottom: 20px;'>
-                <div style='font-size: 16px; color:#808080 ;'>🧑 咨询师</div>
-                <div style='display: inline-block; text-align: left; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{content}</div>
+            <div style='text-align: left; margin-bottom: 20px;'>
+                <div style='font-size: 16px; color:#808080 ;'>🧑 AI</div>
+                <div style='display: inline-block; background-color: #FFFFFF; padding: 10px; border-radius: 10px; font-size: 20px; margin-top: 5px; color: black;'>{chat['content']}</div>
             </div>
             """, 
             unsafe_allow_html=True
         )
-
     
 
 # 用户输入框

@@ -3,11 +3,7 @@ import agents
 import utilities
 import os
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
 
-
-os.environ["OPENAI_API_BASE"] = 'https://api.xiaoai.plus/v1'
-os.environ["OPENAI_API_KEY"] = 'sk-TWqvakjKo0TlqN7YE1Df97488f8446Ce8eAC79A081A74357'
 class AgentImplementation():
     """
     机器人实作
@@ -17,7 +13,7 @@ class AgentImplementation():
         self.including_emotion = True
         self.including_trust = True
         self.including_personality = True
-        self.chat_model = ChatOpenAI(model='gpt-4',temperature=0.9, openai_api_key=os.getenv("OPENAI_API_KEY"))
+        self.chat_model = ChatOpenAI(model='gpt-4-turbo-preview',temperature=0.9, openai_api_key=os.getenv("OPENAI_API_KEY"))
 
     def generate_conversation(self, user_input, conversation_history, selected_case):
 
@@ -29,9 +25,12 @@ class AgentImplementation():
         trust_prompt = ""
         if self.including_trust:
             acquaintance_analyzer = agents.AcquaintanceAnalyzer.from_llm(self.chat_model, verbose=False)
-            result_acquaintance_analyzer_chain = acquaintance_analyzer.invoke({'personality':selected_language_style_personality, 
-                                                                    'conversation_history': conversation_history
-                                                                    })
+            result_acquaintance_analyzer_chain = acquaintance_analyzer.invoke({'case_number': selected_case.get("Case Number", "无案例编号"), 
+                                                                            'general_info': selected_case.get("General Information", "无一般资料"),
+                                                                            'basic_info': selected_case.get("Basic Information", "无基本信息"),
+                                                                            'personality':selected_language_style_personality, 
+                                                                            'conversation_history': conversation_history
+                                                                            })
             trust_prompt = result_acquaintance_analyzer_chain["text"]
 
         emotion_prompt = ""

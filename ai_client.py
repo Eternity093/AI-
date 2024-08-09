@@ -179,7 +179,7 @@ if "selected_case" in st.session_state:
     st.markdown(f"### 案例信息\n\n**案例编号:** {case.get('Case Number', '无案例编号')}\n\n**一般资料:** {general_info}\n\n**基本信息:** {basic_info}")
 
     # 检查并可能发送开场白
-    check_and_send_opening_message()
+    #check_and_send_opening_message()
 
 
 # # 检查是否需要发送开场白

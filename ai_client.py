@@ -8,7 +8,7 @@ import implementation
 import os
 
 os.environ["OPENAI_API_BASE"] = 'https://api.xiaoai.plus/v1'
-os.environ["OPENAI_API_KEY"] = 'sk-TWqvakjKo0TlqN7YE1Df97488f8446Ce8eAC79A081A74357'
+os.environ["OPENAI_API_KEY"] = 'sk-8gtg1X3K9z7NJ1BAEfD487D7C30f46A59d894a7d7dB8825e'
 
 
 # 初始化代理实现
